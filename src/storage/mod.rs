@@ -1,3 +1,3 @@
-mod init;
+mod db_context;
 
-pub use init::db::establish_connection;
+pub type Database = db_context::Database;

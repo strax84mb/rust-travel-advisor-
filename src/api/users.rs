@@ -1,8 +1,11 @@
+/*#[path = "../services/mod.rs"]
+mod services;
+
 pub mod api {
+
     use actix_web::{post, web, Responder, HttpResponse};
     use serde::{Deserialize,Serialize};
-    use crate::services::get_auth_service;
-    use crate::services::AuthService;
+    use crate::services::{get_auth_service, AuthService};
 
     #[derive(Deserialize)]
     struct LoginRequest {
@@ -23,4 +26,4 @@ pub mod api {
         let message: String = service.login();
         HttpResponse::Ok().body(message)
     }
-}
+}*/
