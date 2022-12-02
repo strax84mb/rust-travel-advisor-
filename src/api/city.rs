@@ -1,6 +1,7 @@
 use std::sync::Mutex;
 
 use actix_web::{get, web, Responder, HttpResponse};
+
 use crate::AppState;
 use super::dtos::CityDto;
  

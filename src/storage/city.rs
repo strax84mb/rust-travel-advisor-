@@ -16,4 +16,20 @@ impl Database {
             Err(err) => Err(err.to_string())
         }
     }
+
+    pub async fn get_city_by_id(&self, id: i64) -> Result<City, String> {
+        let result = sqlx::query("SELECT id, name FROM cities WHERE id = $1")
+            .bind(id)
+            .fetch_one(self.connections.as_ref())
+            .await;
+        match result {
+            Ok(row) => {
+                match City::from_row(&row) {
+                    Ok(city) => Ok(city),
+                    Err(err) => Err(err.to_string()),
+                }
+            },
+            Err(err) => Err(err.to_string()),
+        }
+    }
 }
