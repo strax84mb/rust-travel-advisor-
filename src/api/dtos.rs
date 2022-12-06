@@ -5,3 +5,10 @@ pub struct CityDto {
     pub id: i64,
     pub name: String,
 }
+
+#[derive(Serialize, Deserialize)]
+pub struct UserDto {
+    pub id: i64,
+    pub email: String,
+    pub roles: Vec<String>,
+}

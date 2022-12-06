@@ -1,7 +1,9 @@
 mod hello;
 mod city;
 mod dtos;
-//mod users;
+mod auth;
+mod users;
+mod validations;
 
 pub use hello::hello_world;
 

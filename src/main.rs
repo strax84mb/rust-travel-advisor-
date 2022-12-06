@@ -3,6 +3,7 @@ mod lib;
 pub mod api;
 pub mod model;
 pub mod storage;
+pub mod util;
 
 use std::process::exit;
 use std::sync::{Arc, Mutex};

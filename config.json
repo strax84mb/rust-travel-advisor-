@@ -1,13 +1,12 @@
 {
-    "app": {
-      "url": "127.0.0.1",
-      "port": 8000
-    },
-    "dao":
-    {
-      "user": "rust_travel_adv_user",
-      "password": "rust_travel_adv_pass",
-      "address": "localhost:3306",
-      "database": "rust_travel_advisor"
-    }
+  "app": {
+    "url": "127.0.0.1",
+    "port": 8000
+  },
+  "dao": {
+    "user": "rust_travel_adv_user",
+    "password": "rust_travel_adv_pass",
+    "address": "localhost:3306",
+    "database": "rust_travel_advisor"
   }
+}
