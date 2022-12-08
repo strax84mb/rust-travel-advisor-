@@ -5,9 +5,10 @@ use actix_web::{get, web, Responder, HttpResponse};
 use crate::AppState;
 use crate::util::app_errors::Reason::NotFound;
 use super::dtos::CityDto;
- 
+
 pub fn init(cfg: &mut web::ServiceConfig) {
-    cfg.service(get_cities);
+    cfg.service(get_cities)
+        .service(get_city_by_id);
 }
 
 #[get("/v1/cities")]

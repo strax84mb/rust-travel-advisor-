@@ -17,18 +17,20 @@ pub mod errors_mod {
 
     impl Display for Error {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            let step_one = write!(f, "{}: ", self.msg.clone());
-            let cause = self.cause.as_ref();
-            match step_one {
-                Ok(_) => {
-                    if cause.is_some() {
+            let s = self;
+            //let step_one = write!(f, "{}: ", self.msg.clone());
+            let cause = s.cause.as_ref();
+            if cause.is_some() {
+                let step_one = write!(f, "{}: ", self.msg.clone());
+                match step_one {
+                    Ok(_) => {
                         let e =cause.as_deref().unwrap();
-                        <Error as Display>::fmt(e.as_ref(), f)
-                    } else {
-                        Ok(())
-                    }
+                        return <Error as Display>::fmt(e.as_ref(), f)
+                    },
+                    Err(err) => return Err(err),
                 }
-                Err(err) => return Err(err),
+            } else {
+                write!(f, "{}", self.msg.clone())
             }
         }
     }

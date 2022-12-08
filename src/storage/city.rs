@@ -34,4 +34,26 @@ impl Database {
             Err(err) => Err(Error::underlying(err.to_string())),
         }
     }
+
+    pub async fn save_city(&self, name: String) -> Result<City, Error> {
+        let result = sqlx::query("INSERT INTO cities (name) VALUES ($1)")
+            .bind(name.clone())
+            .execute(self.connections.as_ref())
+            .await;
+        match result {
+            Ok(row) => {
+                if row.rows_affected() == 0 {
+                    return Err(Error::underlying("no rows inserted".to_string()));
+                }
+
+                let id = row.last_insert_id() as i64;
+
+                Ok(City {
+                    id: id,
+                    name: name,
+                })
+            },
+            Err(err) => Err(Error::underlying(err.to_string())),
+        }
+    }
 }

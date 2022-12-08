@@ -12,3 +12,15 @@ pub struct UserDto {
     pub email: String,
     pub roles: Vec<String>,
 }
+
+#[derive(Serialize, Deserialize)]
+pub struct LoginRequest {
+    pub email: String,
+    pub pass: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct LoginResponse {
+    pub id: i64,
+    pub token: String,
+}
