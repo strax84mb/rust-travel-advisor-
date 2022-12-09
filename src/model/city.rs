@@ -1,6 +1,9 @@
 use serde::{Serialize, Deserialize};
-use sqlx::mysql::MySqlRow;
-use sqlx::{FromRow, Row};
+use sqlx::{
+    FromRow,
+    Row,
+    mysql::MySqlRow
+};
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct City {

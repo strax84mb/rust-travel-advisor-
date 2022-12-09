@@ -2,14 +2,20 @@ use std::sync::Mutex;
 
 use actix_web::{get, post, web, Responder, HttpResponse, HttpRequest};
 
-use crate::AppState;
-use crate::util::app_errors::Reason::NotFound;
-use super::dtos::CityDto;
-use super::auth::validate_request;
+use crate::{
+    AppState,
+    util::app_errors::Reason::NotFound
+};
+use super::{
+    auth::validate_request,
+    dtos::CityDto,
+    validations::string_to_id
+};
 
 pub fn init(cfg: &mut web::ServiceConfig) {
     cfg.service(get_cities)
-        .service(get_city_by_id);
+        .service(get_city_by_id)
+        .service(upload_cities);
 }
 
 #[get("/v1/cities")]
@@ -36,8 +42,6 @@ async fn get_cities(data: web::Data<Mutex<AppState>>) -> impl Responder {
         Err(err) => HttpResponse::InternalServerError().body(err.to_string()),
     }
 }
-
-use super::validations::string_to_id;
 
 #[get("/v1/cities/{id}")]
 async fn  get_city_by_id(

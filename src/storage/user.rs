@@ -1,7 +1,9 @@
 use sqlx::FromRow;
 
-use crate::util::app_errors::Error;
-use crate::model::User;
+use crate::{
+    util::app_errors::Error,
+    model::User
+};
 use super::db_context::Database;
 
 impl Database {

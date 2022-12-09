@@ -3,8 +3,10 @@ use std::sync::Mutex;
 use actix_web::{post, web, Responder, HttpResponse};
 
 use crate::AppState;
-use super::auth::create_jwt;
-use super::dtos::{LoginRequest, LoginResponse};
+use super::{
+    auth::create_jwt,
+    dtos::{LoginRequest, LoginResponse}
+};
 
 pub fn init(cfg: &mut web::ServiceConfig) {
     cfg.service(login);
