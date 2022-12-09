@@ -63,18 +63,27 @@ pub fn has_role(jwt: String, roles: Vec<String>) -> Result<bool, Error> {
     Ok(roles.iter().any(|r| claims.roles.contains(r)))
 }
 
-pub fn validate_request(req: &HttpRequest, roles: Vec<String>) -> Result<bool, Error> {
-    let mut authorizationValue = match req.headers().get(actix_web::http::header::AUTHORIZATION) {
+pub fn validate_request(req: &HttpRequest, roles: Vec<String>) -> Result<(), Error> {
+    let mut authorization_value = match req.headers().get(actix_web::http::header::AUTHORIZATION) {
         Some(value) => match value.to_str() {
             Ok(s) => s,
             Err(_err) => return Err(Error::underlying("Authorization header is not a string".to_string())),
         },
         None => return Err(Error::underlying("no Authorization header found".to_string())),
     };
-    if !authorizationValue.starts_with("Bearer ") {
+    if !authorization_value.starts_with("Bearer ") {
         return Err(Error::underlying("Authorization header is not a JWT token".to_string()))
     }
-    authorizationValue = &authorizationValue[6..];
+    authorization_value = &authorization_value[6..];
 
-    has_role(authorizationValue.to_string(), roles)
+    match has_role(authorization_value.to_string(), roles) {
+        Ok(role_found) => {
+            if !role_found {
+                return Err(Error::underlying("operation not allowed for user".to_string()))
+            }
+        },
+        Err(err) => return Err(Error::wrap(err, "".to_string())),
+    };
+
+    Ok(())
 }

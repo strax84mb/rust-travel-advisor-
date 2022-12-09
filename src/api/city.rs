@@ -1,10 +1,11 @@
 use std::sync::Mutex;
 
-use actix_web::{get, web, Responder, HttpResponse};
+use actix_web::{get, post, web, Responder, HttpResponse, HttpRequest};
 
 use crate::AppState;
 use crate::util::app_errors::Reason::NotFound;
 use super::dtos::CityDto;
+use super::auth::validate_request;
 
 pub fn init(cfg: &mut web::ServiceConfig) {
     cfg.service(get_cities)
@@ -65,4 +66,35 @@ async fn  get_city_by_id(
         Ok(json) => HttpResponse::Ok().body(json),
         Err(err) => HttpResponse::InternalServerError().body(format!("failed to load city: {}", err.to_string())),
     }
+}
+
+#[post("/v1/cities")]
+async fn upload_cities(req: HttpRequest, payload: web::Bytes, data: web::Data<Mutex<AppState>>) -> impl Responder {
+    match validate_request(&req, vec!["admin".to_string()]) {
+        Err(err) => return HttpResponse::Unauthorized().body(err.to_string()),
+        _ => (),
+    }
+
+    let data_ref = data.get_ref();
+    let db_lock = data_ref.lock().unwrap();
+    let db = db_lock.db.as_ref();
+
+    let mut saved: i16 = 0;
+
+    let payload_vec = payload.to_vec();
+    let mut csv_reader = csv::Reader::from_reader(payload_vec.as_slice());
+    for record in csv_reader.records() {
+        let record = match record {
+            Ok(r) => r,
+            Err(err) => return HttpResponse::BadRequest().body(format!("malformed CSV: {}", err.to_string())),
+        };
+
+        let name = record[0].to_string();
+        match db.save_city(name.clone()).await {
+            Err(err) => return HttpResponse::InternalServerError().body(format!("failed to save city {}: {}", name, err.to_string())),
+            _ => saved += 1,
+        };
+    }
+
+    HttpResponse::Ok().body(format!("successfuly saved {}", saved))
 }
