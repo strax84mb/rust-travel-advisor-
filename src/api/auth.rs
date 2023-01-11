@@ -12,7 +12,6 @@ struct Claims {
     roles: Vec<String>,
 }
 
-
 use crate::util::app_errors::Error;
 
 pub fn create_jwt(user: String, roles: Vec<String>) -> Result<String, Error> {

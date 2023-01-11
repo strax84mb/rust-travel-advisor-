@@ -1,14 +1,13 @@
-use sqlx::FromRow;
+pub mod cities {
+    use sqlx::{FromRow, MySql, Pool};
 
-use crate::{
-    model::City,
-    util::app_errors::Error
-};
-use super::db_context::Database;
-
-impl Database {
-    pub async fn get_cities(&self) -> Result<Vec<City>, Error> {
-        match sqlx::query("SELECT id, name FROM cities").fetch_all(self.connections.as_ref()).await {
+    use crate::{
+        model::City,
+        util::app_errors::Error
+    };
+    
+    pub async fn get_all(pool: &Pool<MySql>) -> Result<Vec<City>, Error> {
+        match sqlx::query("SELECT id, name FROM cities").fetch_all(pool).await {
             Ok(rows) => {
                 let result: Result<Vec<City>, sqlx::Error> = rows.iter().map(|row| City::from_row(row)).collect();
                 match result {
@@ -20,10 +19,10 @@ impl Database {
         }
     }
 
-    pub async fn get_city_by_id(&self, id: i64) -> Result<City, Error> {
-        let result = sqlx::query("SELECT id, name FROM cities WHERE id = $1")
+    pub async fn get_by_id(id: i64, pool: &Pool<MySql>) -> Result<City, Error> {
+        let result = sqlx::query("SELECT id, name FROM cities WHERE id = ?")
             .bind(id)
-            .fetch_one(self.connections.as_ref())
+            .fetch_one(pool)
             .await;
         match result {
             Ok(row) => {
@@ -37,10 +36,10 @@ impl Database {
         }
     }
 
-    pub async fn save_city(&self, name: String) -> Result<City, Error> {
-        let result = sqlx::query("INSERT INTO cities (name) VALUES ($1)")
+    pub async fn new(name: String, pool: &Pool<MySql>) -> Result<City, Error> {
+        let result = sqlx::query("INSERT INTO cities (name) VALUES (?)")
             .bind(name.clone())
-            .execute(self.connections.as_ref())
+            .execute(pool)
             .await;
         match result {
             Ok(row) => {
@@ -50,10 +49,7 @@ impl Database {
 
                 let id = row.last_insert_id() as i64;
 
-                Ok(City {
-                    id: id,
-                    name: name,
-                })
+                Ok(City::new(id, name))
             },
             Err(err) => Err(Error::underlying(err.to_string())),
         }

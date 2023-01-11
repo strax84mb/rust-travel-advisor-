@@ -13,7 +13,7 @@ use actix_web::{App, HttpServer};
 use actix_web::web::Data;
 
 use crate::config::Config;
-use crate::api::{init_hello, init_city, init_user};
+use crate::api::{init_hello, init_city, init_user, init_airport};
 use crate::storage::Database;
 
 #[actix_web::main]
@@ -50,6 +50,7 @@ async fn main() -> std::io::Result<()>{
             .configure(init_hello)
             .configure(init_city)
             .configure(init_user)
+            .configure(init_airport)
         }
     ).bind(config.get_app_url())?;
 

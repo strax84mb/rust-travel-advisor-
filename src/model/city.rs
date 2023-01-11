@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serde::{Serialize, Deserialize};
 use sqlx::{
     FromRow,
@@ -5,10 +7,25 @@ use sqlx::{
     mysql::MySqlRow
 };
 
+use super::{comment::Comment, airport::Airport};
+
 #[derive(Serialize, Deserialize, Clone)]
 pub struct City {
     pub id: i64,
     pub name: String,
+    pub comments: Vec<Comment>,
+    pub airports: HashMap<i64, Airport>,
+}
+
+impl City {
+    pub fn new(id: i64, name: String) -> Self {
+        City {
+            id: id,
+            name: name,
+            comments: vec![],
+            airports: HashMap::new(),
+        }
+    }
 }
 
 impl<'c> FromRow<'c, MySqlRow> for City {
@@ -23,9 +40,6 @@ impl<'c> FromRow<'c, MySqlRow> for City {
             Err(err) => return Err(err),
         };
 
-        Ok(City {
-            id: id,
-            name: name,
-        })
+        Ok(City::new(id, name))
     }
 }

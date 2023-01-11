@@ -4,12 +4,13 @@ use actix_web::{get, post, web, Responder, HttpResponse, HttpRequest};
 
 use crate::{
     AppState,
-    util::app_errors::Reason::NotFound
+    util::app_errors::Reason::NotFound,
+    storage::cities,
 };
 use super::{
     auth::validate_request,
     dtos::CityDto,
-    validations::string_to_id
+    validations::string_to_id,
 };
 
 pub fn init(cfg: &mut web::ServiceConfig) {
@@ -22,15 +23,14 @@ pub fn init(cfg: &mut web::ServiceConfig) {
 async fn get_cities(data: web::Data<Mutex<AppState>>) -> impl Responder {
     let data_ref = data.get_ref();
     let db_lock = data_ref.lock().unwrap();
-    let db = db_lock.db.as_ref();
-    
-    let cities = db.get_cities().await;
-    let cities = match cities {
+    let db_pool = db_lock.db.as_ref().connections.as_ref();
+    // load cities
+    let result = match cities::get_all(db_pool).await {
         Ok(cities) => cities,
         Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
     };
-
-    let dtos: Vec<CityDto> = cities.iter()
+    // convert to DTOs
+    let dtos: Vec<CityDto> = result.iter()
         .map(|c| CityDto {
             id: c.id,
             name: c.name.clone(),
@@ -50,14 +50,14 @@ async fn  get_city_by_id(
 ) -> impl Responder {
     let data_ref = data.get_ref();
     let db_lock = data_ref.lock().unwrap();
-    let db = db_lock.db.as_ref();
+    let db_pool = db_lock.db.as_ref().connections.as_ref();
     // get id
     let city_id = match string_to_id(id.to_string()) {
         Ok(v) => v,
         Err(err) => return HttpResponse::BadRequest().body(format!("failed to parse city ID: {}", err)),
     };
     // load city
-    let city = match db.get_city_by_id(city_id).await {
+    let city = match cities::get_by_id(city_id, db_pool).await {
         Ok(c) => CityDto{
             id: c.id,
             name: c.name,
@@ -81,7 +81,7 @@ async fn upload_cities(req: HttpRequest, payload: web::Bytes, data: web::Data<Mu
 
     let data_ref = data.get_ref();
     let db_lock = data_ref.lock().unwrap();
-    let db = db_lock.db.as_ref();
+    let db_pool = db_lock.db.as_ref().connections.as_ref();
 
     let mut saved: i16 = 0;
 
@@ -94,7 +94,7 @@ async fn upload_cities(req: HttpRequest, payload: web::Bytes, data: web::Data<Mu
         };
 
         let name = record[0].to_string();
-        match db.save_city(name.clone()).await {
+        match cities::new(name.clone(), db_pool).await {
             Err(err) => return HttpResponse::InternalServerError().body(format!("failed to save city {}: {}", name, err.to_string())),
             _ => saved += 1,
         };

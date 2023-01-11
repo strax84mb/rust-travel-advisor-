@@ -8,7 +8,7 @@ use super::db_context::Database;
 
 impl Database {
     pub async fn get_user(&self, id: i64) -> Result<User, Error> {
-        let result = sqlx::query("SELECT id, email, pass, roles FROM users WHERE id = $1")
+        let result = sqlx::query("SELECT id, email, pass, roles FROM users WHERE id = ?")
             .bind(id)
             .fetch_one(self.connections.as_ref())
             .await;
@@ -27,7 +27,7 @@ impl Database {
     pub async fn get_user_by_email_and_pass(&self, email: String, password: String) -> Result<User, Error> {
         let pass = md5::compute(password.as_bytes());
         let pass: String = pass.iter().map(|&q| q as char).collect();
-        let result = sqlx::query("SELECT id, email, pass, roles FROM users WHERE email = $1 AND pass = $2")
+        let result = sqlx::query("SELECT id, email, pass, roles FROM users WHERE email = ? AND pass = ?")
             .bind(email)
             .bind(pass)
             .fetch_one(self.connections.as_ref())
